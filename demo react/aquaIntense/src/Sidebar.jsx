@@ -1,6 +1,7 @@
 import React from "react";
+import UploadFichier from "./UploadFichier";
 
-function BarreLaterale({ modeSombre, toggleModeSombre, afficherDashboard, setAfficherDashboard, choixDemo, gererChangementDemo, refInputFichier, gererChangementFichier }) {
+function BarreLaterale({ modeSombre, toggleModeSombre, afficherDashboard, setAfficherDashboard, gererChangementFichier }) {
   return (
     <div className="barre-laterale">
       <img src="/assets/logo.jpeg" alt="Logo" />
@@ -10,24 +11,9 @@ function BarreLaterale({ modeSombre, toggleModeSombre, afficherDashboard, setAff
       <button className="btn-dashboard" onClick={() => setAfficherDashboard(v => !v)}>
         {afficherDashboard ? '← Retour' : '📊 Tableau de bord'}
       </button>
-      <h2>🔧 Options</h2>
-      <label>
-        📷 Choisir une image de démonstration
-        <select value={choixDemo} onChange={gererChangementDemo}>
-          {Object.keys(choixDemo ? { [choixDemo]: null } : {}).map((cle) => (
-            <option key={cle} value={cle}>{cle}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        📁 Importer une image
-        <input
-          type="file"
-          accept="image/png, image/jpeg"
-          ref={refInputFichier}
-          onChange={gererChangementFichier}
-        />
-      </label>
+      <div style={{marginTop: 16}}>
+        <UploadFichier onFileChange={gererChangementFichier} />
+      </div>
     </div>
   );
 }

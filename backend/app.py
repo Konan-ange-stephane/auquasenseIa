@@ -18,37 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/analyser-image/")
-async def analyser_image(file: UploadFile = File(...)):
-    contents = await file.read()
-    analyse = detect_water_state_opencv(contents)
-    niveau = detect_water_level_opencv(contents)
-    return {"analyse": analyse, "niveau_eau": f"{niveau}% de la surface de l'image est de l'eau" if niveau is not None else "Niveau d'eau non détecté"}
-
 API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyBUmeAWE4dnmlkXIwUbURiLJgcseWkS9RE")  # de préférence dans une variable d'env
-
-class PromptRequest(BaseModel):
-    prompt: str
-
-@app.post("/gemini/")
-async def gemini_query(request: PromptRequest):
-    prompt = request.prompt
-
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key={API_KEY}"
-
-
-    data = {
-        "contents": [{"parts": [{"text": prompt}]}]
-    }
-
-    try:
-        response = requests.post(url, json=data)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        return {"error": str(e), "details": response.text}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyser-image-et-explique/")
 async def analyser_image_et_explique(file: UploadFile = File(...)):
@@ -128,10 +98,3 @@ def detect_water_level_opencv(image_bytes):
     total_pixels = img.shape[0] * img.shape[1]
     water_level_percent = (water_pixels / total_pixels) * 100
     return round(water_level_percent, 2)
-
-@app.post("/analyser-image-opencv/")
-async def analyser_image_opencv(file: UploadFile = File(...)):
-    contents = await file.read()
-    analyse = detect_water_state_opencv(contents)
-    niveau = detect_water_level_opencv(contents)
-    return {"analyse": analyse, "niveau_eau": f"{niveau}% de la surface de l'image est de l'eau" if niveau is not None else "Niveau d'eau non détecté"}
