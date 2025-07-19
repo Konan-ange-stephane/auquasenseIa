@@ -1,6 +1,6 @@
 body, #root {
   background-color: #f5fafd;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   transition: background 0.3s;
 }
 body.mode-sombre, #root.mode-sombre {
@@ -43,11 +43,10 @@ body.mode-sombre, #root.mode-sombre {
   justify-content: center;
 }
 .spinner-roue {
-  border: 6px solid #e3f2fd;
-  border-top: 6px solid #007BFF;
+  display: inline-block;
+  border: 3px solid #fff;
+  border-top: 3px solid #ffd600;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
@@ -146,7 +145,7 @@ body.mode-sombre, #root.mode-sombre {
 /* Classes pour l'app principale (extraits du style JSX) */
 .conteneur {
   display: flex;
-  min-height: 100vh;
+  min-height: 90vh;
 }
 .barre-laterale {
   width: 280px;
@@ -176,17 +175,33 @@ body.mode-sombre, #root.mode-sombre {
 .contenu-principal {
   flex: 1;
   padding: 2em 3em;
-  color: #222;
+  background: #fff;
+  border-radius: 18px;
+  margin: 2em 2em 2em 0;
+  box-shadow: 0 4px 24px #e3eafc;
+  transition: background 0.3s;
+}
+body.mode-sombre .contenu-principal {
+  background: #232a36;
+  box-shadow: 0 4px 24px #181c24;
 }
 .titre-style {
-  font-size: 2.5em;
-  font-weight: bold;
-  color: #007BFF;
+  font-size: 2em;
+  font-weight: 800;
+  color: #1565c0;
+  margin-bottom: 0.2em;
+  letter-spacing: 1px;
+}
+body.mode-sombre .titre-style {
+  color: #90caf9;
 }
 .sous-titre-style {
-  font-size: 1.5em;
-  color: #555;
-  margin-bottom: 1.5em;
+  font-size: 1.1em;
+  color: #1976d2;
+  margin-bottom: 1em;
+}
+body.mode-sombre .sous-titre-style {
+  color: #ffd600;
 }
 .boite {
   padding: 1em;
@@ -196,17 +211,21 @@ body.mode-sombre, #root.mode-sombre {
   text-align: center;
 }
 .btn-analyse {
-  background: #007BFF;
-  color: white;
+  background: linear-gradient(90deg, #1976d2 60%, #42a5f5 100%);
+  color: #fff;
+  font-weight: 700;
   border: none;
+  border-radius: 8px;
   padding: 0.8em 2em;
-  border-radius: 6px;
   font-size: 1.1em;
   cursor: pointer;
-  margin-top: 1em;
+  box-shadow: 0 2px 8px #90caf9;
+  margin-bottom: 1.5em;
+  transition: background 0.2s;
 }
-.btn-analyse:hover {
-  background: #0056b3;
+.btn-analyse:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
 }
 .btn-pdf {
   background: #fff;
@@ -242,23 +261,18 @@ body.mode-sombre, #root.mode-sombre {
 }
 .pied-page {
   margin-top: 2em;
-  color: #007BFF;
-  font-size: 1em;
+  font-size: 0.95em;
+  color: #888;
   text-align: center;
 }
-.btn-dashboard {
-  background: none;
-  border: 2px solid #1976d2;
-  color: #1976d2;
-  font-size: 1.1em;
-  font-weight: 600;
-  cursor: pointer;
-  margin-bottom: 1.5em;
-  border-radius: 6px;
-  padding: 0.5em 1.2em;
-  transition: background 0.2s, color 0.2s;
+body.mode-sombre .pied-page {
+  color: #90caf9;
 }
-.btn-dashboard:hover {
-  background: #1976d2;
-  color: #fff;
+img {
+  box-shadow: 0 2px 12px #90caf9;
+  border: 2px solid #e3eafc;
+}
+body.mode-sombre img {
+  box-shadow: 0 2px 12px #232a36;
+  border: 2px solid #181c24;
 }

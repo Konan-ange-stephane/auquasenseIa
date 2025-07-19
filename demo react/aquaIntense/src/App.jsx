@@ -8,6 +8,8 @@ import ResultatDiagnostic from "./DiagnosticResult.jsx";
 import { Pie, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement);
+import AlertePage from "./AlertePage";
+import AlerteUtilisateurs from "./AlerteUtilisateurs";
 
 
 const imagesDemo = {
@@ -27,6 +29,8 @@ function App() {
   const [afficherDashboard, setAfficherDashboard] = useState(false);
   const [historique, setHistorique] = useState([]);
   const [loadingAnalyse, setLoadingAnalyse] = useState(false);
+  const [afficherAlertes, setAfficherAlertes] = useState(false);
+  const [afficherAlerteUtilisateurs, setAfficherAlerteUtilisateurs] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
@@ -36,6 +40,15 @@ function App() {
   useEffect(() => {
     document.body.classList.toggle('mode-sombre', modeSombre);
   }, [modeSombre]);
+
+  useEffect(() => {
+    const histo = localStorage.getItem('historique');
+    if (histo) setHistorique(JSON.parse(histo));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('historique', JSON.stringify(historique));
+  }, [historique]);
 
   const gererChangementFichier = (e) => {
     const fichier = e.target.files[0];
@@ -67,14 +80,28 @@ function App() {
     if (fileToSend) {
       const formData = new FormData();
       formData.append('file', fileToSend);
+      try {
       const response = await fetch('http://localhost:8000/analyser-image-et-explique/', {
         method: 'POST',
         body: formData,
       });
+        if (!response.ok) {
+          // Affiche une erreur utilisateur
+          setResultat([`❌ Erreur serveur : ${response.status} ${response.statusText}`]);
+          setLoadingAnalyse(false);
+          return;
+        }
       const res = await response.json();
+      console.log(res); // Ajoute cette ligne
+      let explication = "";
+      if (typeof res.explication === "string") {
+        explication = res.explication;
+      } else {
+        explication = res.explication?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      }
       setResultat([
         res.analyse,
-        res.explication?.candidates?.[0]?.content?.parts?.[0]?.text || "",
+        explication,
         res.niveau_eau || ""
       ]);
       setHistorique(h => [
@@ -83,9 +110,13 @@ function App() {
           date: new Date().toLocaleString(),
           diagnostic: res.analyse,
           explication: res.explication?.candidates?.[0]?.content?.parts?.[0]?.text || "",
-          niveau_eau: res.niveau_eau || ""
+          niveau_eau: res.niveau_eau || "",
+          duree_seconde: res.duree_seconde
         }
       ]);
+      } catch (err) {
+        setResultat([`❌ Erreur réseau ou serveur : ${err.message}`]);
+      }
     } else {
       setResultat(["❓ Inconnu : Aucune image sélectionnée."]);
     }
@@ -123,12 +154,27 @@ function App() {
 
   const toggleModeSombre = () => setModeSombre((v) => !v);
 
+  // Historique des alertes (on suppose que c'est le même que l'historique des analyses)
+  const alertes = historique.map(a => ({
+    image: a.image || null, // à adapter si tu stockes l'image
+    diagnostic: a.diagnostic,
+    recommandation: a.explication,
+    date: a.date
+  }));
+
   if (isLoading) {
     return <EcranChargement />;
   }
 
   return (
     <div>
+      <header style={{background: '#3A8DFF', color: '#FFFFFF', padding: '1.2em 2em', display: 'flex', alignItems: 'center', boxShadow: '0 2px 12px #9CD5FF'}}>
+        <img src="/assets/logo.jpeg" alt="Logo" style={{height: 64, borderRadius: 16, marginRight: 32, boxShadow: '0 2px 8px #9CD5FF'}} />
+        <div>
+          <div style={{fontSize: '2.2em', fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase'}}>MINISTÈRE DE L’EAU & DE L’ENVIRONNEMENT</div>
+          <div style={{fontSize: '1.1em', fontWeight: 400, marginTop: 4, color: '#9CD5FF'}}>Surveillance nationale de la qualité de l’eau</div>
+        </div>
+      </header>
       <div className="conteneur">
         <BarreLaterale
           modeSombre={modeSombre}
@@ -139,9 +185,15 @@ function App() {
           gererChangementDemo={gererChangementDemo}
           refInputFichier={refInputFichier}
           gererChangementFichier={gererChangementFichier}
+          setAfficherAlertes={setAfficherAlertes}
+          setAfficherAlerteUtilisateurs={setAfficherAlerteUtilisateurs}
         />
         <div className="contenu-principal">
-          {afficherDashboard ? (
+          {afficherAlerteUtilisateurs ? (
+            <AlerteUtilisateurs />
+          ) : afficherAlertes ? (
+            <AlertePage alertes={alertes} onRetour={() => setAfficherAlertes(false)} />
+          ) : afficherDashboard ? (
             <TableauDeBord historique={historique} />
           ) : (
             <>
@@ -174,7 +226,7 @@ function App() {
               </button>
               <ResultatDiagnostic modeSombre={modeSombre} resultat={resultat} telechargerPDF={telechargerPDF} />
               <div className="pied-page">
-                🚀 Développé pour le Hackathon de Bingerville – Équipe AquaSense IA
+                🚀 – Équipe AquaSense IA
               </div>
             </>
           )}

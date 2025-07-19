@@ -24,7 +24,7 @@ function ResultatDiagnostic({ modeSombre, resultat, telechargerPDF }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-          <span style={{ fontSize: "2em" }}>{resultat[0].slice(0, 2)}</span>
+          <span style={{ fontSize: "2em" }}>{(resultat[0] || "❓").slice(0, 2)}</span>
           <h2 style={{ margin: 0, fontWeight: 700, letterSpacing: 1, color: modeSombre ? "#90caf9" : "#1976d2" }}>Diagnostic</h2>
         </div>
         <p style={{
@@ -38,12 +38,17 @@ function ResultatDiagnostic({ modeSombre, resultat, telechargerPDF }) {
           padding: "1em 1.5em",
           boxShadow: modeSombre ? "0 2px 8px #181c24" : "0 2px 8px #e3f2fd"
         }}>
-          {resultat[0].slice(2).trim()}
+          {(resultat[0] || "Aucun résultat.").slice(2).trim()}
         </p>
         {resultat[2] && (
           <p style={{fontWeight: 600, color: '#1976d2', fontSize: '1.1em'}}>
             Niveau d’eau : {resultat[2]}
           </p>
+        )}
+        {resultat[3] && (
+          <div style={{ marginTop: 16, color: "#888", fontSize: "1em" }}>
+            ⏱️ Analyse réalisée en {resultat[3]} seconde{resultat[3] > 1 ? "s" : ""}
+          </div>
         )}
         {resultat[1] && (
           <div style={{

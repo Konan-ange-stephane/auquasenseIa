@@ -1,32 +1,33 @@
 import React from "react";
 import { Pie, Line } from 'react-chartjs-2';
 
-function TableauDeBord({ historique }) {
+function TableauDeBord({ historique, onRetour }) {
+  // Statistiques clés
   const total = historique.length;
-  const nbClaires = historique.filter(a => a.diagnostic && a.diagnostic.includes('Eau claire')).length;
-  const nbPolluees = historique.filter(a => a.diagnostic && a.diagnostic.includes('polluée')).length;
+  const nbClaires = historique.filter(
+    a => a.diagnostic && (
+      a.diagnostic.includes('Eau claire') ||
+      a.diagnostic.includes('Sûr') ||
+      a.diagnostic.includes('💧')
+    )
+  ).length;
+  const nbPolluees = historique.filter(
+    a => a.diagnostic && (
+      a.diagnostic.toLowerCase().includes('polluée') ||
+      a.diagnostic.toLowerCase().includes('pollution') ||
+      a.diagnostic.toLowerCase().includes('algue') ||
+      a.diagnostic.toLowerCase().includes('déchet') ||
+      a.diagnostic.toLowerCase().includes('danger')
+    )
+  ).length;
   const nbBas = historique.filter(a => a.diagnostic && a.diagnostic.includes("Niveau d'eau bas")).length;
-  const pctBas = total > 0 ? Math.round((nbBas / total) * 100) : 0;
+  const tauxEauSaine = total > 0 ? Math.round((nbClaires / total) * 100) : '—';
+  const nbSites = 12; // Valeur fictive
 
-  const pieData = {
-    labels: ['Eau claire', 'Polluée (algues)', "Niveau d'eau bas"],
-    datasets: [
-      {
-        data: [nbClaires, nbPolluees, nbBas],
-        backgroundColor: [
-          '#42a5f5',
-          '#ffd600',
-          '#d32f2f'
-        ],
-        borderColor: '#fff',
-        borderWidth: 2,
-      },
-    ],
-  };
-
+  // Préparation des données pour le diagramme en courbe
   const labels = historique.map(a => a.date);
   const dataClaires = historique.map(a => a.diagnostic && a.diagnostic.includes('Eau claire') ? 1 : 0);
-  const dataPolluees = historique.map(a => a.diagnostic && a.diagnostic.includes('polluée') ? 1 : 0);
+  const dataPolluees = historique.map(a => a.diagnostic && (a.diagnostic.includes('polluée') || a.diagnostic.includes('Déchets')) ? 1 : 0);
   const dataBas = historique.map(a => a.diagnostic && a.diagnostic.includes("Niveau d'eau bas") ? 1 : 0);
 
   const lineData = {
@@ -35,24 +36,24 @@ function TableauDeBord({ historique }) {
       {
         label: 'Eau claire',
         data: dataClaires,
-        borderColor: '#42a5f5',
-        backgroundColor: '#42a5f5',
+        borderColor: '#3A8DFF',
+        backgroundColor: '#9CD5FF',
         tension: 0.3,
         fill: false,
       },
       {
-        label: 'Polluée (algues)',
+        label: 'Polluée/Déchets',
         data: dataPolluees,
-        borderColor: '#ffd600',
-        backgroundColor: '#ffd600',
+        borderColor: '#d32f2f',
+        backgroundColor: '#d32f2f',
         tension: 0.3,
         fill: false,
       },
       {
         label: "Niveau d'eau bas",
         data: dataBas,
-        borderColor: '#d32f2f',
-        backgroundColor: '#d32f2f',
+        borderColor: '#388e3c',
+        backgroundColor: '#388e3c',
         tension: 0.3,
         fill: false,
       },
@@ -81,38 +82,32 @@ function TableauDeBord({ historique }) {
 
   return (
     <div>
-      <h1 className="entete-tableau">Tableau de bord</h1>
-      <div className="stats-tableau">
-        <div className="carte-stat">
-          <div className="valeur">{total}</div>
-          <div>Analyses totales</div>
+      {onRetour && (
+        <button onClick={onRetour} style={{marginBottom: 18, background: '#3A8DFF', color: '#fff', border: 'none', borderRadius: 8, padding: '0.7em 1.5em', fontWeight: 700, fontSize: '1.08em', boxShadow: '0 2px 8px #9CD5FF', cursor: 'pointer'}}>← Retour à l'accueil</button>
+      )}
+      <div style={{display: 'flex', gap: 32, flexWrap: 'wrap', marginBottom: 40, justifyContent: 'center'}}>
+        <div style={{flex: 1, minWidth: 220, background: '#FFFFFF', borderRadius: 16, padding: 32, textAlign: 'center', boxShadow: '0 4px 24px #9CD5FF', margin: 8}}>
+          <div style={{fontSize: 48, color: '#3A8DFF', fontWeight: 900, marginBottom: 8}}>📊 {total}</div>
+          <div style={{color: '#1976D2', fontWeight: 900, fontSize: '1.2em', letterSpacing: 1, textTransform: 'uppercase'}}>Analyses totales</div>
         </div>
-        <div className="carte-stat eau-claire">
-          <div className="valeur">{nbClaires}</div>
-          <div>Eau claire</div>
+        <div style={{flex: 1, minWidth: 220, background: '#EAF6FF', borderRadius: 16, padding: 32, textAlign: 'center', boxShadow: '0 4px 24px #9CD5FF', margin: 8}}>
+          <div style={{fontSize: 48, color: '#3A8DFF', fontWeight: 900, marginBottom: 8}}>🚨 {nbPolluees}</div>
+          <div style={{color: '#1976D2', fontWeight: 900, fontSize: '1.2em', letterSpacing: 1, textTransform: 'uppercase'}}>Alertes pollution/déchets</div>
         </div>
-        <div className="carte-stat polluee">
-          <div className="valeur">{nbPolluees}</div>
-          <div>Polluée (algues)</div>
+        <div style={{flex: 1, minWidth: 220, background: '#FFFFFF', borderRadius: 16, padding: 32, textAlign: 'center', boxShadow: '0 4px 24px #9CD5FF', margin: 8}}>
+          <div style={{fontSize: 48, color: '#3A8DFF', fontWeight: 900, marginBottom: 8}}>💧 {tauxEauSaine}%</div>
+          <div style={{color: '#1976D2', fontWeight: 900, fontSize: '1.2em', letterSpacing: 1, textTransform: 'uppercase'}}>Taux d’eau saine</div>
         </div>
-        <div className="carte-stat niveau-bas">
-          <div className="valeur">{nbBas} <span className="pourcentage">({pctBas}%)</span></div>
-          <div>Niveau d'eau bas</div>
+        <div style={{flex: 1, minWidth: 220, background: '#EAF6FF', borderRadius: 16, padding: 32, textAlign: 'center', boxShadow: '0 4px 24px #9CD5FF', margin: 8}}>
+          <div style={{fontSize: 48, color: '#3A8DFF', fontWeight: 900, marginBottom: 8}}>🗺️ {nbSites}</div>
+          <div style={{color: '#1976D2', fontWeight: 900, fontSize: '1.2em', letterSpacing: 1, textTransform: 'uppercase'}}>Sites surveillés</div>
         </div>
       </div>
-      <div className="graphiques-tableau">
-        <div className="carte-graphique">
-          <h2 className="titre-graphique">Répartition des diagnostics</h2>
-          <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Pie data={pieData} options={{ plugins: { legend: { position: 'bottom' } } }} />
-          </div>
-        </div>
-        <div className="carte-graphique">
-          <h2 className="titre-graphique">Évolution dans le temps</h2>
-          <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Line data={lineData} options={lineOptions} />
-          </div>
-        </div>
+      <hr style={{border: 'none', borderTop: '3px solid #3A8DFF', margin: '0 0 32px 0'}} />
+      <h1 className="entete-tableau">Tableau de bord</h1>
+      <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 12px #EAF6FF', margin: '32px 0', padding: 24 }}>
+        <h2 style={{ color: '#3A8DFF', fontWeight: 900, fontSize: '1.3em', marginBottom: 16 }}>Évolution des diagnostics dans le temps</h2>
+        <Line data={lineData} options={lineOptions} />
       </div>
       <div className="zone-historique">
         <h2 className="titre-graphique">Historique des analyses</h2>
@@ -139,10 +134,6 @@ function TableauDeBord({ historique }) {
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="zone-mesures">
-        <h2 className="titre-mesures">Mesures à prendre les plus fréquentes</h2>
-        <div className="placeholder-mesures">[À venir]</div>
       </div>
     </div>
   );
